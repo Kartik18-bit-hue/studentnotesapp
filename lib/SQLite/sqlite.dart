@@ -26,9 +26,9 @@ class DatabaseHelper {
   }
 
   //Now we create login and sign up method
-  //as we create sqlite other functionality in our previous video
+  //as create sqlite other functionality in our previous video
 
-  //IF you didn't watch my previous videos, check part 1 and part 2
+
 
   //Login Method
 
