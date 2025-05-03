@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sqlite_flutter_crud/JsonModels/note_model.dart';
-import 'package:sqlite_flutter_crud/SQLite/sqlite.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CreateNote extends StatefulWidget {
   const CreateNote({super.key});
@@ -14,66 +14,64 @@ class _CreateNoteState extends State<CreateNote> {
   final content = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  final db = DatabaseHelper();
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final firestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create note"),
+        title: const Text("Create Note"),
         actions: [
           IconButton(
-              onPressed: () {
-                //Add Note button
-                //We should not allow empty data to the database
-                if (formKey.currentState!.validate()) {
-                  db
-                      .createNote(NoteModel(
-                          noteTitle: title.text,
-                          noteContent: content.text,
-                          createdAt: DateTime.now().toIso8601String()))
-                      .whenComplete(() {
-                    //When this value is true
-                    Navigator.of(context).pop(true);
+            icon: const Icon(Icons.check),
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                try {
+                  await firestore.collection('notes').add({
+                    'uid': currentUser?.uid,
+                    'noteTitle': title.text,
+                    'noteContent': content.text,
+                    'createdAt': DateTime.now().toIso8601String(),
                   });
+
+                  Navigator.of(context).pop(true);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Failed to save note: $e")),
+                  );
                 }
-              },
-              icon: Icon(Icons.check))
+              }
+            },
+          )
         ],
       ),
       body: Form(
-          //I forgot to specify key
-          key: formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: title,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Title is required";
-                    }
-                    return null;
-                  },
-                  decoration: const InputDecoration(
-                    label: Text("Title"),
-                  ),
+        key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: title,
+                validator: (value) =>
+                    value!.isEmpty ? "Title is required" : null,
+                decoration: const InputDecoration(
+                  label: Text("Title"),
                 ),
-                TextFormField(
-                  controller: content,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Content is required";
-                    }
-                    return null;
-                  },
-                  decoration: const InputDecoration(
-                    label: Text("Content"),
-                  ),
+              ),
+              TextFormField(
+                controller: content,
+                validator: (value) =>
+                    value!.isEmpty ? "Content is required" : null,
+                decoration: const InputDecoration(
+                  label: Text("Content"),
                 ),
-              ],
-            ),
-          )),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

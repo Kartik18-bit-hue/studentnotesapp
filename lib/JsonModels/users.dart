@@ -1,6 +1,4 @@
-//In here first we create the users json model
-// To parse this JSON data, do
-//
+
 
 class Users {
   final int? usrId;
