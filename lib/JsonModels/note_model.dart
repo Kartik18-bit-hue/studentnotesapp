@@ -1,27 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class NoteModel {
-  final int? noteId;
+  final String id;
+  final String userId;
   final String noteTitle;
   final String noteContent;
-  final String createdAt;
+  final Timestamp createdAt;
 
   NoteModel({
-    this.noteId,
+    required this.id,
+    required this.userId,
     required this.noteTitle,
     required this.noteContent,
     required this.createdAt,
   });
 
-  factory NoteModel.fromMap(Map<String, dynamic> json) => NoteModel(
-        noteId: json["noteId"],
-        noteTitle: json["noteTitle"],
-        noteContent: json["noteContent"],
-        createdAt: json["createdAt"],
-      );
+  factory NoteModel.fromDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return NoteModel(
+      id: doc.id,
+      userId: data['userId'] ?? '',
+      noteTitle: data['noteTitle'] ?? '',
+      noteContent: data['noteContent'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+    );
+  }
 
-  Map<String, dynamic> toMap() => {
-        "noteId": noteId,
-        "noteTitle": noteTitle,
-        "noteContent": noteContent,
-        "createdAt": createdAt,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'noteTitle': noteTitle,
+      'noteContent': noteContent,
+      'createdAt': createdAt,
+    };
+  }
 }

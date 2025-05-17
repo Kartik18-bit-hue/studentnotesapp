@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:quickalert/quickalert.dart';
-import 'package:sqlite_flutter_crud/Authtentication/signup.dart';
-import 'package:sqlite_flutter_crud/constants.dart';
 
-import 'package:sqlite_flutter_crud/homepage.dart';
+import 'package:sqlite_flutter_crud/Authtentication/signup.dart'; // Add the sign up page import
+import 'package:sqlite_flutter_crud/constants.dart';
+import 'package:sqlite_flutter_crud/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,9 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
           email: email.text.trim(),
           password: password.text.trim(),
         );
-        Navigator.pushReplacement(
+        // On successful login, redirect to Notes page
+        Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(
@@ -50,41 +51,35 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      appBar: AppBar(title: const  Text("Student Management System")),
-      
+      appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            
-         children: [
-          SizedBox(
-            width: 200,
-            height: 200,
-            child: Lottie.asset(lottieURL),
-          ),
-          
-      
+            children: [
+              SizedBox(
+                width: 250,
+                height: 250,
+                child: Lottie.asset(lottieURL, animate: true),
+              ),
               
-       TextFormField(
-                  controller: email,
-                  decoration: InputDecoration(labelText: "Email",border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    return null;
-                  },
-                ),
-              
-              const SizedBox(height: 17),
+              TextFormField(
+                controller: email,
+                decoration: const InputDecoration(labelText: "Email"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: password,
                 obscureText: true,
-                decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder(borderRadius: BorderRadius.circular(15),)),
+                decoration: const InputDecoration(labelText: "Password"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
@@ -97,7 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _login,
                 child: const Text("Login"),
               ),
-              const SizedBox(height: 17),
+              
+              // Add Sign Up option
+              const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -105,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (context) => const SignUp()),
                   );
                 },
-                child: const Text("Don't have an account? Sign Up"),
+                child: const Text("Don't have an account? Sign up"),
               ),
             ],
           ),

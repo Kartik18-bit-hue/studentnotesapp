@@ -1,72 +1,70 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:sqlite_flutter_crud/JsonModels/note_model.dart';
 
-class CreateNote extends StatefulWidget {
-  const CreateNote({super.key});
-
+class CreateNotePage extends StatefulWidget {
   @override
-  State<CreateNote> createState() => _CreateNoteState();
+  _CreateNotePageState createState() => _CreateNotePageState();
 }
 
-class _CreateNoteState extends State<CreateNote> {
-  final title = TextEditingController();
-  final content = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+class _CreateNotePageState extends State<CreateNotePage> {
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  final currentUser = FirebaseAuth.instance.currentUser;
-  final firestore = FirebaseFirestore.instance;
+  Future<void> _saveNote() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please log in to save notes.")));
+      return;
+    }
+
+    if (_formKey.currentState?.validate() ?? false) {
+      try {
+        final note = NoteModel(
+          id: '',
+          userId: user.uid,
+          noteTitle: _titleController.text.trim(),
+          noteContent: _contentController.text.trim(),
+          createdAt: Timestamp.now(),
+        );
+
+        await FirebaseFirestore.instance.collection('notes').add(note.toMap());
+        Navigator.of(context).pop(true);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to save note: $e")));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Create Note"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                try {
-                  await firestore.collection('notes').add({
-                    'uid': currentUser?.uid,
-                    'noteTitle': title.text,
-                    'noteContent': content.text,
-                    'createdAt': DateTime.now().toIso8601String(),
-                  });
-
-                  Navigator.of(context).pop(true);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to save note: $e")),
-                  );
-                }
-              }
-            },
-          )
-        ],
-      ),
-      body: Form(
-        key: formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
+      appBar: AppBar(title: Text("Create Note")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
-                controller: title,
-                validator: (value) =>
-                    value!.isEmpty ? "Title is required" : null,
-                decoration: const InputDecoration(
-                  label: Text("Title"),
-                ),
+                controller: _titleController,
+                decoration: InputDecoration(labelText: 'Title'),
+                validator: (value) => value?.isEmpty ?? true ? 'Please enter a title' : null,
               ),
+              SizedBox(height: 16),
               TextFormField(
-                controller: content,
-                validator: (value) =>
-                    value!.isEmpty ? "Content is required" : null,
-                decoration: const InputDecoration(
-                  label: Text("Content"),
-                ),
+                controller: _contentController,
+                decoration: InputDecoration(labelText: 'Content'),
+                validator: (value) => value?.isEmpty ?? true ? 'Please enter content' : null,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+              ),
+              SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _saveNote,
+                child: Text("Save Note"),
               ),
             ],
           ),

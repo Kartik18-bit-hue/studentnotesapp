@@ -1,25 +1,23 @@
+class UserModel {
+  final String uid;
+  final String email;
 
-
-class Users {
-  final int? usrId;
-  final String usrName;
-  final String usrPassword;
-
-  Users({
-    this.usrId,
-    required this.usrName,
-    required this.usrPassword,
+  UserModel({
+    required this.uid,
+    required this.email,
   });
 
-  factory Users.fromMap(Map<String, dynamic> json) => Users(
-        usrId: json["usrId"],
-        usrName: json["usrName"],
-        usrPassword: json["usrPassword"],
-      );
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      uid: map['uid'],
+      email: map['email'],
+    );
+  }
 
-  Map<String, dynamic> toMap() => {
-        "usrId": usrId,
-        "usrName": usrName,
-        "usrPassword": usrPassword,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'email': email,
+    };
+  }
 }

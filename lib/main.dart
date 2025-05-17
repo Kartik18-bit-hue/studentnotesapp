@@ -1,14 +1,14 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:sqlite_flutter_crud/Authtentication/login.dart';
-import 'package:sqlite_flutter_crud/homepage.dart';
+import 'package:sqlite_flutter_crud/Views/create_note.dart';
+import 'package:sqlite_flutter_crud/Views/noteslistpage.dart';
 import 'package:sqlite_flutter_crud/firebase_options.dart';
+import 'package:sqlite_flutter_crud/home_screen.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase with platform-specific options
@@ -16,11 +16,11 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp( MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -31,19 +31,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AuthWrapper(), // Automatically redirects user
+      home: _auth.currentUser != null
+          ? const HomeScreen()
+          : const LoginScreen(), // Automatically redirects user
     );
-  }
-}
-
-// 🔒 Widget that checks if user is logged in
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Get current user from FirebaseAuth
-    final user = FirebaseAuth.instance.currentUser;
-
-    // If user is logged in, show homepage, else login screen
-    return user != null ? HomeScreen() : LoginScreen();
   }
 }

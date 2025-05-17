@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:sqlite_flutter_crud/Authtentication/login.dart';
-import 'package:sqlite_flutter_crud/homepage.dart';
+import 'package:sqlite_flutter_crud/Views/create_note.dart';
+import 'package:sqlite_flutter_crud/Views/noteslistpage.dart';
+
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -46,7 +48,7 @@ class _SignUpState extends State<SignUp> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => NotesListPage()),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(
