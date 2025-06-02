@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:sqlite_flutter_crud/JsonModels/note_model.dart';
 
 class NotesListPage extends StatelessWidget {
+  const NotesListPage({Key? key}) : super(key: key);
+
   Stream<List<NoteModel>> _fetchNotes() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -16,10 +18,10 @@ class NotesListPage extends StatelessWidget {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return NoteModel.fromDoc(doc);
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        return NoteModel.fromDoc(doc);
+      }).toList();
+    });
   }
 
   @override
@@ -50,7 +52,7 @@ class NotesListPage extends StatelessWidget {
                 title: Text(note.noteTitle),
                 subtitle: Text(note.noteContent),
                 onTap: () {
-                  // Navigate to note details or edit page
+                  // TODO: Navigate to details/edit page
                 },
               );
             },

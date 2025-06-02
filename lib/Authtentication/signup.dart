@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:sqlite_flutter_crud/Authtentication/login.dart';
-import 'package:sqlite_flutter_crud/Views/create_note.dart';
+
 import 'package:sqlite_flutter_crud/Views/noteslistpage.dart';
 
 

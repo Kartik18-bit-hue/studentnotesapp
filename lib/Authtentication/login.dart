@@ -7,6 +7,9 @@ import 'package:sqlite_flutter_crud/Authtentication/signup.dart'; // Add the sig
 import 'package:sqlite_flutter_crud/constants.dart';
 import 'package:sqlite_flutter_crud/home_screen.dart';
 
+
+
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -36,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // On successful login, redirect to Notes page
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) =>  const HomeScreen()),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(
@@ -51,8 +54,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
+    
+      appBar: AppBar(title:  const Text("Login"),titleTextStyle: const TextStyle(fontFamily: "Poppins"),
+    
+  
+      ),
       body: Padding(
+        
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: formKey,

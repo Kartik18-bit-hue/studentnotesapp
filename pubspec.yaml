@@ -38,7 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   firebase_core:
   firebase_auth: ^5.5.3
-  sqflite: ^2.3.0
+  
   path: ^1.8.3
   intl: ^0.18.1
   path_provider: ^2.1.1
@@ -46,6 +46,11 @@ dependencies:
   cloud_firestore: ^5.6.7
   lottie: ^3.3.1
   flutter_slidable: ^3.0.0
+  google_fonts: ^6.2.1
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
+  iconly: ^1.0.1
+  equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -84,15 +89,17 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
+  fonts:
+     - family: Intel
+       fonts:
+         - asset: lib/assets/fonts/Inter-Regular.ttf
+         - asset: lib/assets/fonts/Inter-SemiBold.ttf
+           weight: 600
+  
+     - family: Poppins
+       fonts:
+         - asset: lib/assets/fonts/Poppins-Bold (1).ttf
+           weight: 600
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
