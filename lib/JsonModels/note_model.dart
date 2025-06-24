@@ -5,27 +5,38 @@ class NoteModel {
   final String userId;
   final String noteTitle;
   final String noteContent;
-  final Timestamp createdAt;
-  final Timestamp? dueDate; // ✅ Add this
+  final Timestamp? createdAt;
+  final Timestamp? dueDate;
 
   NoteModel({
     required this.id,
     required this.userId,
     required this.noteTitle,
     required this.noteContent,
-    required this.createdAt,
-    this.dueDate, // ✅ Add this
+    this.createdAt,
+    this.dueDate,
   });
 
-  factory NoteModel.fromDoc(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory NoteModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? {};
     return NoteModel(
       id: doc.id,
-      userId: data['userId'],
-      noteTitle: data['noteTitle'],
-      noteContent: data['noteContent'],
-      createdAt: data['createdAt'],
-      dueDate: data['dueDate'], // ✅ Add this
+      userId: data['userId'] as String? ?? '',
+      noteTitle: data['noteTitle'] as String? ?? '',
+      noteContent: data['noteContent'] as String? ?? '',
+      createdAt: data['createdAt'] as Timestamp?,
+      dueDate: data['dueDate'] as Timestamp?,
+    );
+  }
+
+  factory NoteModel.fromMap(Map<String, dynamic> data, String id) {
+    return NoteModel(
+      id: id,
+      userId: data['userId'] as String? ?? '',
+      noteTitle: data['noteTitle'] as String? ?? '',
+      noteContent: data['noteContent'] as String? ?? '',
+      createdAt: data['createdAt'] as Timestamp?,
+      dueDate: data['dueDate'] as Timestamp?,
     );
   }
 
@@ -34,8 +45,24 @@ class NoteModel {
       'userId': userId,
       'noteTitle': noteTitle,
       'noteContent': noteContent,
-      'createdAt': createdAt,
-      'dueDate': dueDate, // ✅ Add this
+      if (createdAt != null) 'createdAt': createdAt,
+      if (dueDate != null) 'dueDate': dueDate,
     };
+  }
+
+  NoteModel copyWith({
+    String? noteTitle,
+    String? noteContent,
+    Timestamp? createdAt,
+    Timestamp? dueDate,
+  }) {
+    return NoteModel(
+      id: id,
+      userId: userId,
+      noteTitle: noteTitle ?? this.noteTitle,
+      noteContent: noteContent ?? this.noteContent,
+      createdAt: createdAt ?? this.createdAt,
+      dueDate: dueDate ?? this.dueDate,
+    );
   }
 }

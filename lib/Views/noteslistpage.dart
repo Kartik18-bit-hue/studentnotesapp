@@ -12,9 +12,11 @@ class NotesListPage extends StatelessWidget {
       return Stream.value([]);
     }
 
+    // ✅ Fetch from user's notes subcollection
     return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
         .collection('notes')
-        .where('userId', isEqualTo: user.uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
@@ -48,12 +50,23 @@ class NotesListPage extends StatelessWidget {
             itemCount: notes.length,
             itemBuilder: (context, index) {
               final note = notes[index];
-              return ListTile(
-                title: Text(note.noteTitle),
-                subtitle: Text(note.noteContent),
-                onTap: () {
-                  // TODO: Navigate to details/edit page
-                },
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  title: Text(
+                    note.noteTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    note.noteContent,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    // TODO: Navigate to note detail/edit screen
+                  },
+                ),
               );
             },
           );

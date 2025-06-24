@@ -3,8 +3,7 @@ import 'package:equatable/equatable.dart';
 enum NavItem {
   homeView,
   profileView,
-  orderView,
-  cartView,
+ 
 }
 
 

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sqlite_flutter_crud/Authtentication/login.dart';
 import 'package:sqlite_flutter_crud/JsonModels/note_model.dart';
+import 'package:sqlite_flutter_crud/JsonModels/services/database_services.dart';
 
 class CreateNotePage extends StatefulWidget {
   const CreateNotePage({Key? key}) : super(key: key);
@@ -15,20 +17,16 @@ class _CreateNotePageState extends State<CreateNotePage> {
   final _contentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedDueDate;
+  final _db = DatabaseServices();
 
   Future<void> _saveNote() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please log in to save notes.")),
-      );
-      return;
-    }
-
     if (_formKey.currentState?.validate() ?? false) {
       try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) throw Exception("User not logged in");
+
         final note = NoteModel(
-          id: '',
+          id: '', // Firestore will assign ID
           userId: user.uid,
           noteTitle: _titleController.text.trim(),
           noteContent: _contentController.text.trim(),
@@ -38,12 +36,12 @@ class _CreateNotePageState extends State<CreateNotePage> {
               : null,
         );
 
-        await FirebaseFirestore.instance
-            .collection('notes')
-            .add(note.toMap());
+        await _db.addNote(note);
 
+        if (!mounted) return;
         Navigator.of(context).pop(true);
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to save note: $e")),
         );
@@ -52,15 +50,15 @@ class _CreateNotePageState extends State<CreateNotePage> {
   }
 
   Future<void> _pickDueDate() async {
-    final pickedDate = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDueDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-    if (pickedDate != null) {
+    if (picked != null && mounted) {
       setState(() {
-        _selectedDueDate = pickedDate;
+        _selectedDueDate = picked;
       });
     }
   }
@@ -75,9 +73,22 @@ class _CreateNotePageState extends State<CreateNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Create Note")),
+      appBar: AppBar(
+        title: const Text("Create Note"),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            icon: const Icon(Icons.exit_to_app),
+          )
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -103,9 +114,11 @@ class _CreateNotePageState extends State<CreateNotePage> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text(_selectedDueDate == null
-                    ? "No Due Date Selected"
-                    : "Due: ${_selectedDueDate!.toLocal().toString().split(' ')[0]}"),
+                title: Text(
+                  _selectedDueDate == null
+                      ? "No Due Date Selected"
+                      : "Due: ${_selectedDueDate!.toLocal().toString().split(' ')[0]}",
+                ),
                 trailing: const Icon(Icons.calendar_today),
                 onTap: _pickDueDate,
               ),

@@ -27,10 +27,14 @@ class _PendingWidgetState extends State<PendingWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<TodoModel>>(
-      stream: _databaseServices.todos,
+      stream: _databaseServices.todos,  // already filtered for completed == false
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<TodoModel> todos = snapshot.data!;
+          if (todos.isEmpty) {
+            return const Center(child: Text("No pending tasks"));
+          }
+
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -38,15 +42,9 @@ class _PendingWidgetState extends State<PendingWidget> {
             itemBuilder: (context, index) {
               TodoModel todoModel = todos[index];
 
-              // Safely convert timestamp to DateTime
-              DateTime dt;
-              if (todoModel.timestamp is Timestamp) {
-                dt = (todoModel.timestamp as Timestamp).toDate();
-              } else if (todoModel.timestamp is DateTime) {
-                dt = todoModel.timestamp as DateTime;
-              } else {
-                dt = DateTime.now(); // fallback or default
-              }
+              DateTime dt = todoModel.createdAt is Timestamp
+                  ? (todoModel.createdAt as Timestamp).toDate()
+                  : DateTime.now();
 
               return Container(
                 margin: const EdgeInsets.all(10),
@@ -56,6 +54,25 @@ class _PendingWidgetState extends State<PendingWidget> {
                 ),
                 child: Slidable(
                   key: ValueKey(todoModel.id),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    children: [
+                      SlidableAction(
+                        onPressed: (_) => _markAsCompleted(todoModel),
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        icon: Icons.check,
+                        label: 'Done',
+                      ),
+                      SlidableAction(
+                        onPressed: (_) => _deleteTodo(todoModel),
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        icon: Icons.delete,
+                        label: 'Delete',
+                      ),
+                    ],
+                  ),
                   child: ListTile(
                     title: Text(
                       todoModel.title,
@@ -88,6 +105,20 @@ class _PendingWidgetState extends State<PendingWidget> {
           );
         }
       },
+    );
+  }
+
+  void _markAsCompleted(TodoModel todo) async {
+    await _databaseServices.updateTodoCompletionStatus(todo.id!, true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Marked as completed")),
+    );
+  }
+
+  void _deleteTodo(TodoModel todo) async {
+    await _databaseServices.deleteTodo(todo.id!);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Todo deleted")),
     );
   }
 }

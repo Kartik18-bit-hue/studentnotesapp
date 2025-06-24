@@ -140,28 +140,28 @@ class _HomeScreenState extends State<TodoHomeScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                if (todo == null) {
-                  await _databaseService.addTodoTask(
-                    _titleController.text.trim(),
-                    _descriptionController.text.trim(),
-                  );
-                } else {
-                  await _databaseService.updateTodoCompletionStatus(
-                    todo.id,
-                    _titleController.text.trim() as bool,
-                    _descriptionController.text.trim(),
-                  );
-                }
-                Navigator.pop(context);
-              },
-              child: Text(todo == null ? "Add" : "Update"),
-            ),
+          ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.indigo,
+    foregroundColor: Colors.white,
+  ),
+  onPressed: () async {
+    if (todo == null) {
+      await _databaseService.addTodoTask(
+        _titleController.text.trim(),
+        _descriptionController.text.trim(),
+      );
+    } else {
+      await _databaseService.updateTodoContent(
+        todo.id!,
+        _titleController.text.trim(),
+        _descriptionController.text.trim(),
+      );
+    }
+    Navigator.pop(context);
+  },
+  child: Text(todo == null ? "Add" : "Update"),
+),
           ],
         );
       },

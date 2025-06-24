@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
-import 'package:sqlite_flutter_crud/Views/create_note.dart';
+import 'package:sqlite_flutter_crud/pages/create_note.dart';
 import 'package:sqlite_flutter_crud/Views/noteslistpage.dart';
 import 'package:sqlite_flutter_crud/todo_home_screen.dart';
 

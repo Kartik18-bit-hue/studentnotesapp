@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 import 'package:sqlite_flutter_crud/Authtentication/login.dart';
 
 
 import 'package:sqlite_flutter_crud/firebase_options.dart';
-import 'package:sqlite_flutter_crud/home_screen.dart';
+import 'package:sqlite_flutter_crud/pages/home_screen.dart';
 
 
 void main() async {
@@ -52,9 +53,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: _auth.currentUser != null
+      home: _auth.currentUser == null
           ? const LoginScreen()
-          :  const HomeScreen(), // Automatically redirects user
+          :   HomeScreen(), // Automatically redirects user
     );
   }
 }

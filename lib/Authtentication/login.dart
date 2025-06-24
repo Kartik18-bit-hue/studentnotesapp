@@ -5,7 +5,7 @@ import 'package:quickalert/quickalert.dart';
 
 import 'package:sqlite_flutter_crud/Authtentication/signup.dart'; // Add the sign up page import
 import 'package:sqlite_flutter_crud/constants.dart';
-import 'package:sqlite_flutter_crud/home_screen.dart';
+import 'package:sqlite_flutter_crud/pages/home_screen.dart';
 
 
 
@@ -36,10 +36,10 @@ class _LoginScreenState extends State<LoginScreen> {
           email: email.text.trim(),
           password: password.text.trim(),
         );
-        // On successful login, redirect to Notes page
+        // On successful login, redirect to Home page
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) =>  const HomeScreen()),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(

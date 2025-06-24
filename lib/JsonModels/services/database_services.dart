@@ -1,75 +1,142 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:sqlite_flutter_crud/JsonModels/todo_model.dart';
-
+import 'package:sqlite_flutter_crud/JsonModels/note_model.dart';
 
 class DatabaseServices {
-  final CollectionReference todoCollection =
-      FirebaseFirestore.instance.collection("todos");
+  User? get currentUser => FirebaseAuth.instance.currentUser;
 
-  User? user = FirebaseAuth.instance.currentUser;
-
-  // Add todo task
-  Future<DocumentReference> addTodoTask(
-      String title, String description) async {
-    return await todoCollection.add({
-      'uid': user!.uid,
-      'title': title,
-      'description': description,
-      'completed': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+  // ---------- Todos ----------
+  CollectionReference get userTodoCollection {
+    final user = currentUser;
+    if (user == null) throw Exception("User not logged in");
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .collection("todos");
   }
 
-  // Update todo content
-  Future<void> updateTodoContent(
-      String id, String title, String description) async {
-    final docRef = todoCollection.doc(id);
-    return await docRef.update({
-      'title': title,
-      'description': description,
-    });
+  Future<DocumentReference?> addTodoTask(String title, String description) async {
+    try {
+      return await userTodoCollection.add({
+        'title': title,
+        'description': description,
+        'completed': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print("Error adding task: $e");
+      return null;
+    }
   }
 
-  // Update todo status
-  Future<void> updateTodoCompletionStatus(String id, bool completed, String text) async {
-    return await todoCollection.doc(id).update({'completed': completed});
+  Future<void> updateTodoContent(String id, String title, String description) async {
+    try {
+      await userTodoCollection.doc(id).update({
+        'title': title,
+        'description': description,
+      });
+    } catch (e) {
+      print("Error updating content: $e");
+    }
   }
 
-  // Mark todo as deleted (update completed flag — optional renaming)
-  Future<void> markTodoAsDeleted(String id) async {
-    return await todoCollection.doc(id).update({'completed': true});
+  Future<void> updateTodoCompletionStatus(String id, bool completed) async {
+    try {
+      await userTodoCollection.doc(id).update({'completed': completed});
+    } catch (e) {
+      print("Error updating completion: $e");
+    }
   }
 
-  // Get pending tasks
+  Future<void> deleteTodo(String id) async {
+    try {
+      await userTodoCollection.doc(id).delete();
+    } catch (e) {
+      print("Error deleting todo: $e");
+    }
+  }
+
   Stream<List<TodoModel>> get todos {
-    return todoCollection
-        .where('uid', isEqualTo: user!.uid)
+    return userTodoCollection
         .where('completed', isEqualTo: false)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map(_todoListFromSnapshot);
   }
 
-  // Get completed tasks
   Stream<List<TodoModel>> get completedTodos {
-    return todoCollection
-        .where('uid', isEqualTo: user!.uid)
+    return userTodoCollection
         .where('completed', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map(_todoListFromSnapshot);
   }
 
-  // Convert Firestore snapshot to list of TodoModel
   List<TodoModel> _todoListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
-      return TodoModel(
-        id: doc.id,
-        title: doc['title'] ?? '',
-        description: doc['description'] ?? '',
-        completed: doc['completed'] ?? false,
-        timestamp: doc['createdAt'] ?? Timestamp.now(),
-      );
+      final data = doc.data() as Map<String, dynamic>;
+      return TodoModel.fromJson(data, doc.id);
+    }).toList();
+  }
+
+  // ---------- Notes ----------
+  CollectionReference get userNoteCollection {
+    final user = currentUser;
+    if (user == null) throw Exception("User not logged in");
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .collection("notes");
+  }
+
+  Future<DocumentReference?> addNote(NoteModel note) async {
+    try {
+      return await userNoteCollection.add(note.toMap());
+    } catch (e) {
+      print("Error adding note: $e");
+      return null;
+    }
+  }
+
+  Future<void> updateNote(String id, {required String title, required String content}) async {
+    try {
+      await userNoteCollection.doc(id).update({
+        'noteTitle': title,
+        'noteContent': content,
+      });
+    } catch (e) {
+      print("Error updating note: $e");
+    }
+  }
+
+  Future<void> deleteNote(String id) async {
+    try {
+      await userNoteCollection.doc(id).delete();
+    } catch (e) {
+      print("Error deleting note: $e");
+    }
+  }
+
+  Stream<List<NoteModel>> get notes {
+    return userNoteCollection
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(_noteListFromSnapshot);
+  }
+
+  Stream<List<NoteModel>> notesDueBefore(DateTime date) {
+    return userNoteCollection
+        .where('dueDate', isLessThan: Timestamp.fromDate(date))
+        .orderBy('dueDate', descending: true)
+        .snapshots()
+        .map(_noteListFromSnapshot);
+  }
+
+  List<NoteModel> _noteListFromSnapshot(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return NoteModel.fromDoc(doc as DocumentSnapshot<Map<String, dynamic>>);
     }).toList();
   }
 }
