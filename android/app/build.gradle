@@ -23,16 +23,17 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.sqlite_flutter_crud"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
 
     sourceSets {
