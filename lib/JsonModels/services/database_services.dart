@@ -16,6 +16,7 @@ class DatabaseServices {
         .collection("todos");
   }
 
+  /// Old method: without due date
   Future<DocumentReference?> addTodoTask(String title, String description) async {
     try {
       return await userTodoCollection.add({
@@ -26,6 +27,22 @@ class DatabaseServices {
       });
     } catch (e) {
       print("Error adding task: $e");
+      return null;
+    }
+  }
+
+  /// New method: with due date
+  Future<DocumentReference?> addTodoTaskWithDueDate(String title, String description, DateTime dueDate) async {
+    try {
+      return await userTodoCollection.add({
+        'title': title,
+        'description': description,
+        'completed': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'dueDate': Timestamp.fromDate(dueDate),
+      });
+    } catch (e) {
+      print("Error adding task with due date: $e");
       return null;
     }
   }
@@ -68,6 +85,13 @@ class DatabaseServices {
   Stream<List<TodoModel>> get completedTodos {
     return userTodoCollection
         .where('completed', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(_todoListFromSnapshot);
+  }
+
+  Stream<List<TodoModel>> get allTodos {
+    return userTodoCollection
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(_todoListFromSnapshot);

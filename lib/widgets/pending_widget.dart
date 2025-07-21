@@ -13,10 +13,9 @@ class PendingWidget extends StatefulWidget {
 }
 
 class _PendingWidgetState extends State<PendingWidget> {
+  final DatabaseServices _databaseServices = DatabaseServices();
   User? user = FirebaseAuth.instance.currentUser;
   late String uid;
-
-  final DatabaseServices _databaseServices = DatabaseServices();
 
   @override
   void initState() {
@@ -27,45 +26,66 @@ class _PendingWidgetState extends State<PendingWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<TodoModel>>(
-      stream: _databaseServices.todos,  // already filtered for completed == false
+      stream: _databaseServices.todos,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          List<TodoModel> todos = snapshot.data!;
+          final todos = snapshot.data!;
+
           if (todos.isEmpty) {
             return const Center(child: Text("No pending tasks"));
           }
 
+          // Check for overdue and mark as completed
+          for (var todo in todos) {
+            if (todo.dueDate != null && todo.dueDate is Timestamp) {
+              DateTime dueDate = (todo.dueDate as Timestamp).toDate();
+              if (dueDate.isBefore(DateTime.now())) {
+                _databaseServices.updateTodoCompletionStatus(todo.id!, true);
+              }
+            }
+          }
+
           return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(10),
             itemCount: todos.length,
             itemBuilder: (context, index) {
-              TodoModel todoModel = todos[index];
+              final todo = todos[index];
 
-              DateTime dt = todoModel.createdAt is Timestamp
-                  ? (todoModel.createdAt as Timestamp).toDate()
-                  : DateTime.now();
+              // Get createdAt as DateTime
+              DateTime createdAt = DateTime.now();
+              if (todo.createdAt is Timestamp) {
+                createdAt = (todo.createdAt as Timestamp).toDate();
+              }
+
+              // Get dueDate as DateTime
+              DateTime? dueDate;
+              if (todo.dueDate != null && todo.dueDate is Timestamp) {
+                dueDate = (todo.dueDate as Timestamp).toDate();
+              }
+
+              // Check if overdue
+              final bool isOverdue = dueDate != null && dueDate.isBefore(DateTime.now());
 
               return Container(
-                margin: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Slidable(
-                  key: ValueKey(todoModel.id),
+                  key: ValueKey(todo.id),
                   endActionPane: ActionPane(
                     motion: const ScrollMotion(),
                     children: [
                       SlidableAction(
-                        onPressed: (_) => _markAsCompleted(todoModel),
+                        onPressed: (_) => _markAsCompleted(todo),
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                         icon: Icons.check,
                         label: 'Done',
                       ),
                       SlidableAction(
-                        onPressed: (_) => _deleteTodo(todoModel),
+                        onPressed: (_) => _deleteTodo(todo),
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
                         icon: Icons.delete,
@@ -74,22 +94,20 @@ class _PendingWidgetState extends State<PendingWidget> {
                     ],
                   ),
                   child: ListTile(
-                    title: Text(
-                      todoModel.title,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
+                    title: Text(todo.title, style: const TextStyle(fontWeight: FontWeight.w500)),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          todoModel.description,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
+                        Text(todo.description),
                         const SizedBox(height: 5),
-                        Text(
-                          "Due: ${dt.day}/${dt.month}/${dt.year}",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
+                        if (dueDate != null)
+                          Text(
+                            "Due: ${dueDate.day}/${dueDate.month}/${dueDate.year}",
+                            style: TextStyle(
+                              color: isOverdue ? Colors.red : Colors.grey,
+                              fontWeight: isOverdue ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -100,9 +118,7 @@ class _PendingWidgetState extends State<PendingWidget> {
         } else if (snapshot.hasError) {
           return Center(child: Text("Error: ${snapshot.error}"));
         } else {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
       },
     );

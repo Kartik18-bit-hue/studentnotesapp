@@ -1,170 +1,124 @@
+// ... your imports
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:sqlite_flutter_crud/Authtentication/login.dart';
-import 'package:sqlite_flutter_crud/JsonModels/services/auth_services.dart';
 import 'package:sqlite_flutter_crud/JsonModels/services/database_services.dart';
 import 'package:sqlite_flutter_crud/JsonModels/todo_model.dart';
+import 'package:sqlite_flutter_crud/pages/create_task.dart';
+import 'package:sqlite_flutter_crud/task.dart';
+import 'package:sqlite_flutter_crud/tasks.dart';
 import 'package:sqlite_flutter_crud/widgets/completed_widget.dart';
 import 'package:sqlite_flutter_crud/widgets/pending_widget.dart';
+
 
 class TodoHomeScreen extends StatefulWidget {
   const TodoHomeScreen({super.key});
 
   @override
-  State<TodoHomeScreen> createState() => _HomeScreenState();
+  State<TodoHomeScreen> createState() => _TodoHomeScreenState();
 }
 
-class _HomeScreenState extends State<TodoHomeScreen> {
-  int _buttonIndex = 0;
+class _TodoHomeScreenState extends State<TodoHomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final DatabaseServices _databaseServices = DatabaseServices();
+  User? user = FirebaseAuth.instance.currentUser;
+  late String uid;
 
-  final List<Widget> _widgets = const [
-    PendingWidget(),
-    CompletedWidget(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    uid = user?.uid ?? '';
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 73, 22, 83),
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: const Color.fromARGB(255, 160, 75, 174),
-        title: const Text("Todo"),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await AuthServices().signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
+        title: const Text('My Tasks'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: StreamBuilder<List<TodoModel>>(
+            stream: _databaseServices.allTodos,
+            builder: (context, snapshot) {
+              int pendingCount = 0;
+              int completedCount = 0;
+
+              if (snapshot.hasData) {
+                final todos = snapshot.data!;
+                pendingCount = todos.where((todo) => !todo.completed).length;
+                completedCount = todos.where((todo) => todo.completed).length;
+              }
+
+              return TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Pending"),
+                        const SizedBox(width: 6),
+                        Chip(
+                          label: Text(
+                            "$pendingCount",
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                          backgroundColor: Colors.blue,
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Completed"),
+                        const SizedBox(width: 6),
+                        Chip(
+                          label: Text(
+                            "$completedCount",
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               );
             },
-            icon: const Icon(Icons.exit_to_app),
-          )
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          PendingWidget(),
+          CompletedWidget(),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildTabButton("Pending", 0),
-                _buildTabButton("Completed", 1),
-              ],
-            ),
-            const SizedBox(height: 30),
-            _widgets[_buttonIndex],
-          ],
-        ),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
-        child: const Icon(Icons.add),
+      
         onPressed: () {
-          _showTaskDialog(context);
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const CreateTaskPage()),
+          );
         },
+        tooltip: "Increment",
+        
+        child: const Icon(Icons.add),
+
       ),
-    );
-  }
-
-  Widget _buildTabButton(String text, int index) {
-    final isSelected = _buttonIndex == index;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _buttonIndex = index;
-        });
-      },
-      child: Container(
-        height: 50,
-        width: MediaQuery.of(context).size.width / 2.2,
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.indigo : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: isSelected ? 16 : 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.black,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showTaskDialog(BuildContext context, {TodoModel? todo}) {
-    final TextEditingController _titleController =
-        TextEditingController(text: todo?.title ?? '');
-    final TextEditingController _descriptionController =
-        TextEditingController(text: todo?.description ?? '');
-    final DatabaseServices _databaseService = DatabaseServices();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            todo == null ? "Add Task" : "Edit Task",
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: "Title",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-          ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.indigo,
-    foregroundColor: Colors.white,
-  ),
-  onPressed: () async {
-    if (todo == null) {
-      await _databaseService.addTodoTask(
-        _titleController.text.trim(),
-        _descriptionController.text.trim(),
-      );
-    } else {
-      await _databaseService.updateTodoContent(
-        todo.id!,
-        _titleController.text.trim(),
-        _descriptionController.text.trim(),
-      );
-    }
-    Navigator.pop(context);
-  },
-  child: Text(todo == null ? "Add" : "Update"),
-),
-          ],
-        );
-      },
     );
   }
 }

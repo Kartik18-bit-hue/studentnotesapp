@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 import 'package:sqlite_flutter_crud/Authtentication/login.dart';
-
 
 import 'package:sqlite_flutter_crud/firebase_options.dart';
 import 'package:sqlite_flutter_crud/pages/home_screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,33 +26,28 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Student Management System',
-     theme: ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Poppins',
         textTheme: const TextTheme(
           titleLarge: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+              fontSize: 20, color: Colors.white, fontWeight: FontWeight.w500),
+          bodyLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          bodyMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           displayMedium: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: Colors.black,
-          ),
+              fontWeight: FontWeight.w700, fontSize: 18, color: Colors.black),
         ),
       ),
-      home: _auth.currentUser == null
-          ? const LoginScreen()
-          :   HomeScreen(), // Automatically redirects user
+      home: Builder(
+        builder: (context) {
+          double screenWidth = MediaQuery.of(context).size.width;
+          double containerWidth = screenWidth <= 800 ? double.infinity : 600;
+
+          return _auth.currentUser == null
+              ? const LoginScreen()
+              : HomeScreen(); // You can pass containerWidth to the screen if needed
+        },
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ class TodoModel {
   final String description;
   final bool completed;
   final Timestamp? createdAt;
+  final Timestamp? dueDate;
 
   TodoModel({
     this.id,
@@ -13,6 +14,7 @@ class TodoModel {
     required this.description,
     required this.completed,
     this.createdAt,
+    this.dueDate,
   });
 
   factory TodoModel.fromJson(Map<String, dynamic> json, String id) {
@@ -22,6 +24,7 @@ class TodoModel {
       description: json['description'] ?? '',
       completed: json['completed'] ?? false,
       createdAt: json['createdAt'] as Timestamp?,
+      dueDate: json['dueDate'] as Timestamp?,
     );
   }
 
