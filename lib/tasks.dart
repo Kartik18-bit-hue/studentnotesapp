@@ -1,4 +1,4 @@
-import 'package:dotted_border/dotted_border.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqlite_flutter_crud/task.dart'; // updated Task model
@@ -59,19 +59,7 @@ class Tasks extends StatelessWidget {
         Navigator.push(
             context, MaterialPageRoute(builder: (_) => const TodoHomeScreen()));
       },
-      child: DottedBorder(
-        borderType: BorderType.RRect,
-        radius: const Radius.circular(20),
-        dashPattern: const [10, 10],
-        color: Colors.grey,
-        strokeWidth: 2,
-        child: const Center(
-          child: Text(
-            'Add +',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+     
     );
   }
 

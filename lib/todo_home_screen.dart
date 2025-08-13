@@ -105,13 +105,14 @@ class _TodoHomeScreenState extends State<TodoHomeScreen> with SingleTickerProvid
           CompletedWidget(),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
       
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const CreateTaskPage()),
+            
           );
         },
         tooltip: "Increment",

@@ -7,9 +7,6 @@ import 'package:sqlite_flutter_crud/Authtentication/signup.dart'; // Add the sig
 import 'package:sqlite_flutter_crud/constants.dart';
 import 'package:sqlite_flutter_crud/pages/home_screen.dart';
 
-
-
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -36,10 +33,13 @@ class _LoginScreenState extends State<LoginScreen> {
           email: email.text.trim(),
           password: password.text.trim(),
         );
-        // On successful login, redirect to Home page
-        Navigator.push(
+
+        // On successful login, redirect to HomeScreen without dark mode params
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(
@@ -54,13 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
-      appBar: AppBar(title:  const Text("Login"),titleTextStyle: const TextStyle(fontFamily: "Poppins"),
-    
-  
+      appBar: AppBar(
+        title: const Text("Login"),
+        titleTextStyle: const TextStyle(fontFamily: "Poppins"),
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: formKey,
@@ -72,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 250,
                 child: Lottie.asset(lottieURL, animate: true),
               ),
-              
               TextFormField(
                 controller: email,
                 decoration: const InputDecoration(labelText: "Email"),
@@ -100,8 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _login,
                 child: const Text("Login"),
               ),
-              
-              // Add Sign Up option
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {

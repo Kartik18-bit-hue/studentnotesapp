@@ -48,7 +48,7 @@ class _SignUpState extends State<SignUp> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => NotesListPage()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       } on FirebaseAuthException catch (e) {
         QuickAlert.show(

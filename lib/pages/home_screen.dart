@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sqlite_flutter_crud/pages/calculator.dart';
 import 'package:sqlite_flutter_crud/pages/create_note.dart';
 import 'package:sqlite_flutter_crud/pages/health.dart';
 import 'package:sqlite_flutter_crud/todo_home_screen.dart';
@@ -14,10 +15,13 @@ class HomeScreen extends StatelessWidget {
         page = const TodoHomeScreen();
         break;
       case 'Notes':
-        page = const CreateNotePage(); // or NotesHomeScreen if you build it
+        page = const CreateNotePage();
         break;
       case 'Health':
         page = const HealthPage();
+        break;
+      case 'Calculator':
+        page = const GpaCgpaInstantCalculator();
         break;
       default:
         ScaffoldMessenger.of(context).showSnackBar(
@@ -35,9 +39,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: const Drawer(child: SideMenu()),
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(context),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -71,6 +75,12 @@ class HomeScreen extends StatelessWidget {
                     title: 'Health',
                     color: Colors.green,
                     icon: Icons.favorite,
+                  ),
+                  _buildDashboardCard(
+                    context,
+                    title: 'Calculator',
+                    color: Colors.red,
+                    icon: Icons.calculate_rounded,
                   ),
                 ],
               ),
@@ -115,19 +125,19 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.black),
+      iconTheme: Theme.of(context).iconTheme,
       title: const Text(
         'Welcome',
         style: TextStyle(
-          color: Colors.black,
           fontSize: 26,
           fontWeight: FontWeight.bold,
         ),
       ),
+      // No theme toggle button here
     );
   }
 }
